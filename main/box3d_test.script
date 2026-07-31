@@ -1,0 +1,166 @@
+local spawned_boxes = {}
+local spawned_spheres = {}
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("@render:", "use_camera_projection")
+	msg.post("camera", "acquire_camera_focus")
+	msg.post("@render:", "clear_color", { color = vmath.vector4(0.3, 0.4, 0.5, 1.0) })
+
+	if box3d then
+		local gravity = box3d.get_gravity()
+		if gravity then
+			print(string.format("Box3D Gravity -> x: %.1f, y: %.1f, z: %.1f", gravity.x, gravity.y, gravity.z))
+		end
+
+		-- Static sloped floor
+		box3d.create_box("static", 0.0, -2.5, 0.0, 6.0, 0.3, 6.0, 12.0)
+
+		-- Spawn a few falling boxes
+		box3d.create_box("dynamic", -1.0, 3.0, 0.0, 0.5, 0.5, 0.5, nil, 1.0)
+		box3d.create_box("dynamic",  1.0, 4.5, 0.0, 0.6, 0.6, 0.6, nil, 1.5)
+
+		-- Spawn a few falling balls (spheres)
+		-- Parameters: type ("dynamic"), x, y, z, radius, density
+		box3d.create_sphere("dynamic", -0.5, 6.0, 0.0, 0.6, 1.0)
+		box3d.create_sphere("dynamic",  0.5, 7.5, 0.0, 0.8, 2.0)
+
+		print("Spawned simple demo with spheres and boxes!")
+	else
+		print("Error: box3d module not found!")
+	end
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	if box3d then
+		local shapes = box3d.get_debug_shapes()
+
+		-- Track which indices are active this frame to clean up removed objects
+		local active_boxes = {}
+		local active_spheres = {}
+
+		for i, shape in ipairs(shapes) do
+			if shape.type == "hull" then
+				active_boxes[i] = true
+				if not spawned_boxes[i] then
+					local ok, instance = pcall(factory.create, "#factory") -- points to box_visual.go
+					if ok and instance then
+						spawned_boxes[i] = instance
+					else
+						print("Error creating box factory instance: " .. tostring(instance))
+					end
+				end
+
+				local id = spawned_boxes[i]
+				if id and go.exists(id) then
+					local p = shape.position
+					go.set_position(vmath.vector3(p.x, p.y, p.z), id)
+
+					local q = shape.rotation
+					go.set_rotation(vmath.quat(q.x, q.y, q.z, q.w), id)
+
+					if shape.extents then
+						local sx = shape.extents.x * 2 
+						local sy = shape.extents.y * 2
+						local sz = shape.extents.z * 2
+						go.set_scale(vmath.vector3(sx, sy, sz), id)
+					end
+				else
+					spawned_boxes[i] = nil
+				end
+
+			elseif shape.type == "sphere" then
+				active_spheres[i] = true
+				if not spawned_spheres[i] then
+					local ok, instance = pcall(factory.create, "#factory1") -- points to sphere_visual.go
+					if ok and instance then
+						spawned_spheres[i] = instance
+					else
+						print("Error creating sphere factory instance: " .. tostring(instance))
+					end
+				end
+
+				local id = spawned_spheres[i]
+				if id and go.exists(id) then
+					local p = shape.position
+					go.set_position(vmath.vector3(p.x, p.y, p.z), id)
+
+					local q = shape.rotation
+					go.set_rotation(vmath.quat(q.x, q.y, q.z, q.w), id)
+
+					if shape.radius then
+						local diameter = shape.radius * 2
+						go.set_scale(vmath.vector3(diameter, diameter, diameter), id)
+					end
+				else
+					spawned_spheres[i] = nil
+				end
+			end
+		end
+
+		-- Clean up old box objects that no longer exist in physics
+		for i, id in pairs(spawned_boxes) do
+			if not active_boxes[i] then
+				if go.exists(id) then
+					go.delete(id)
+				end
+				spawned_boxes[i] = nil
+			end
+		end
+
+		-- Clean up old sphere objects that no longer exist in physics
+		for i, id in pairs(spawned_spheres) do
+			if not active_spheres[i] then
+				if go.exists(id) then
+					go.delete(id)
+				end
+				spawned_spheres[i] = nil
+			end
+		end
+	end
+end
+
+function late_update(self, dt)
+	-- This function is called at the end of update cycle but before render
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function fixed_update(self, dt)
+	-- This function is called if 'Fixed Update Frequency' is enabled in the Engine section of game.project
+	-- Can be coupled with fixed updates of the physics simulation if 'Use Fixed Timestep' is enabled in
+	-- Physics section of game.project
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Learn more: https://defold.com/manuals/message-passing/
+	-- Remove this function if not needed
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

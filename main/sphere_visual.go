@@ -1,0 +1,15 @@
+embedded_components {
+  id: "model"
+  type: "model"
+  data: "mesh: \"/builtins/assets/gltf/sphere.gltf\"\n"
+  "name: \"{{NAME}}\"\n"
+  "materials {\n"
+  "  name: \"default\"\n"
+  "  material: \"/builtins/materials/model.material\"\n"
+  "  textures {\n"
+  "    sampler: \"tex0\"\n"
+  "    texture: \"/assets/images/empty_texture_1024x1024.png\"\n"
+  "  }\n"
+  "}\n"
+  ""
+}

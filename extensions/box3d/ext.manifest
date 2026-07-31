@@ -1,0 +1,47 @@
+name: "Box3D"
+platforms:
+    x86_64-win32:
+        context:
+            flags: [
+                "-fpermissive",
+                "-Wno-write-strings",
+                "-Wno-pointer-arith",
+                "-Wno-missing-braces",
+                "-Wno-c++-compat",
+                "-Wno-unused-private-field"
+            ]
+            defines: [
+                "DM_PLATFORM_WINDOWS",
+                "DDM_DEBUG"
+            ]
+
+    wasm-web:
+        context:
+            flags: [
+                "-std=c++17",
+                "-O3"
+            ]
+            defines: [
+                "DM_PLATFORM_HTML5",
+                "DM_PLATFORM_WEB"
+            ]
+
+    armv7-android:
+        context:
+            flags: [
+                "-std=c++17",
+                "-O3"
+            ]
+            defines: [
+                "DM_PLATFORM_ANDROID"
+            ]
+
+    arm64-android:
+        context:
+            flags: [
+                "-std=c++17",
+                "-O3"
+            ]
+            defines: [
+                "DM_PLATFORM_ANDROID"
+            ]
