@@ -20,7 +20,7 @@ scale = 0.01
 scale_mode = stretch
 
 [project]
-title = pre-built-box2d-for-windows-android-wasm-defold
+title = pre-built-box3d-for-windows-android-wasm-defold
 
 [model]
 max_count = 128
